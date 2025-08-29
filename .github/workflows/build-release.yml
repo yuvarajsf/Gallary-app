@@ -38,6 +38,10 @@ jobs:
     - name: Get Flutter dependencies
       run: flutter pub get
       
+    - name: Analyze code for errors
+      run: flutter analyze --fatal-infos
+      continue-on-error: false
+      
     - name: Clean build cache
       run: flutter clean
       
@@ -45,7 +49,7 @@ jobs:
       run: flutter pub get
       
     - name: Build APK (Release Only)
-      run: flutter build apk --release --verbose
+      run: flutter build apk --release --verbose --no-tree-shake-icons
       
     - name: Create release folder
       run: |
@@ -125,7 +129,7 @@ jobs:
           - \`gallery-app-release.apk\` - Production ready APK
           
           ### ✅ Build Status:
-          - Flutter version: 3.19.0 stable
+          - Flutter version: 3.16.9 stable
           - Build type: Release only
           - Target: Android APK
           

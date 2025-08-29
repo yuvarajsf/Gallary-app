@@ -172,78 +172,67 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
             scrollPhysics: const BouncingScrollPhysics(),
             builder: (context, index) {
               final image = widget.images[index];
-              return PhotoViewGalleryPageOptions(
-                imageProvider: CachedNetworkImageProvider(
-                  ApiService.getImageUrl(image.path),
-                ),
-                minScale: PhotoViewComputedScale.contained,
-                maxScale: PhotoViewComputedScale.covered * 2,
-                heroAttributes: PhotoViewHeroAttributes(tag: image.path),
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: Colors.grey[900],
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.broken_image_outlined,
-                        size: 64,
-                        color: Colors.white54,
+              return PhotoViewGalleryPageOptions.customChild(
+                child: CachedNetworkImage(
+                  imageUrl: ApiService.getImageUrl(image.path),
+                  placeholder: (context, url) => Container(
+                    color: Colors.black,
+                    child: const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            color: Colors.white54,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Loading...',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Failed to load image',
-                        style: TextStyle(
-                          color: Colors.white54,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        image.name,
-                        style: TextStyle(
-                          color: Colors.white38,
-                          fontSize: 12,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-                loadingBuilder: (context, event) => Container(
-                  color: Colors.black,
-                  child: Center(
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey[900],
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(
-                          value: event?.expectedTotalBytes != null
-                              ? event!.cumulativeBytesLoaded / event.expectedTotalBytes!
-                              : null,
-                          color: Theme.of(context).colorScheme.primary,
+                        const Icon(
+                          Icons.broken_image_outlined,
+                          size: 64,
+                          color: Colors.white54,
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Loading...',
+                          'Failed to load image',
                           style: TextStyle(
                             color: Colors.white54,
                             fontSize: 16,
                           ),
                         ),
+                        const SizedBox(height: 8),
+                        Text(
+                          image.name,
+                          style: TextStyle(
+                            color: Colors.white38,
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ],
                     ),
                   ),
                 ),
+                minScale: PhotoViewComputedScale.contained,
+                maxScale: PhotoViewComputedScale.covered * 2,
+                heroAttributes: PhotoViewHeroAttributes(tag: image.path),
               );
             },
             itemCount: widget.images.length,
-            loadingBuilder: (context, event) => Center(
-              child: CircularProgressIndicator(
-                value: event?.expectedTotalBytes != null
-                    ? event!.cumulativeBytesLoaded / event.expectedTotalBytes!
-                    : null,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
             backgroundDecoration: const BoxDecoration(color: Colors.black),
             pageController: _pageController,
             onPageChanged: _onPageChanged,

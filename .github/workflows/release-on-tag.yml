@@ -32,11 +32,15 @@ jobs:
     - name: Get Flutter dependencies
       run: flutter pub get
       
+    - name: Analyze code for errors
+      run: flutter analyze --fatal-infos
+      continue-on-error: false
+      
     - name: Clean build cache
       run: flutter clean && flutter pub get
       
     - name: Build Release APK
-      run: flutter build apk --release --verbose
+      run: flutter build apk --release --verbose --no-tree-shake-icons
       
     - name: Get version from tag
       id: version

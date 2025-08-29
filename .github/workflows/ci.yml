@@ -37,4 +37,4 @@ jobs:
       continue-on-error: true
       
     - name: Check for build issues
-      run: flutter build apk --release --verbose
+      run: flutter build apk --release --verbose --no-tree-shake-icons
