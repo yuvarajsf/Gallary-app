@@ -105,6 +105,42 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
+    - name: Create Automatic Release (on main branch push)
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: latest
+        name: Gallery App - Latest Build
+        files: |
+          release-files/gallery-app-release.apk
+        body: |
+          ## 🔄 Latest Gallery App Build
+          
+          This is an automatic release created from the latest commit to the main branch.
+          
+          ### 📱 Download:
+          - **gallery-app-release.apk** - Latest production ready APK
+          
+          ### ℹ️ Build Info:
+          - **Commit**: ${{ github.sha }}
+          - **Build Date**: ${{ github.run_id }}
+          - **Flutter Version**: 3.16.9 stable
+          
+          ### 🚀 Quick Start:
+          1. Download the APK file above
+          2. Enable "Install from Unknown Sources" on your Android device
+          3. Install the APK
+          4. Set up your Python server (see README.md for details)
+          5. Connect the app to your server
+          
+          > **Note**: This release is automatically updated with each commit to main branch.
+          
+        draft: false
+        prerelease: false
+        make_latest: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
     - name: Comment PR with download links (on PR)
       if: github.event_name == 'pull_request'
       uses: actions/github-script@v7
