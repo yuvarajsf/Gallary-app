@@ -1,0 +1,129 @@
+# Gallery App Configuration File
+# 
+# This file contains all the static values you might want to change.
+# After making changes, you'll need to update the corresponding files.
+
+# ===========================================
+# PYTHON SERVER CONFIGURATION
+# ===========================================
+
+# Gallery Directory Path (Update in: python_server/gallery_server.py)
+BASE_DIRECTORY = "C:\Users\YourName\Pictures"
+
+# Server Host and Port (Update in: python_server/gallery_server.py)
+SERVER_HOST = "0.0.0.0"
+SERVER_PORT = 5000
+
+# Thumbnail Size (Update in: python_server/gallery_server.py)
+THUMBNAIL_WIDTH = 300
+THUMBNAIL_HEIGHT = 300
+
+# Supported File Extensions (Update in: python_server/gallery_server.py)
+SUPPORTED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".mp4", ".avi", ".mov", ".mkv"]
+
+# ===========================================
+# FLUTTER APP CONFIGURATION
+# ===========================================
+
+# App Information (Update in: pubspec.yaml)
+APP_NAME = "gallery_app"
+APP_DESCRIPTION = "A beautiful gallery app for browsing files from local server"
+APP_VERSION = "1.0.0+1"
+
+# Package Name (Update in: android/app/build.gradle)
+PACKAGE_NAME = "com.example.gallery_app"
+
+# App Display Name (Update in: android/app/src/main/AndroidManifest.xml)
+APP_DISPLAY_NAME = "Gallery App"
+
+# ===========================================
+# THEME COLORS (Update in: lib/utils/theme_data.dart)
+# ===========================================
+
+# Primary Colors (Hex format)
+PRIMARY_COLOR = "#6366F1"      # Indigo
+SECONDARY_COLOR = "#8B5CF6"    # Purple
+ACCENT_COLOR = "#EC4899"       # Pink
+
+# Background Colors
+LIGHT_BACKGROUND = "#F8FAFC"   # Light gray
+DARK_BACKGROUND = "#0F172A"    # Dark blue-gray
+
+# Surface Colors
+LIGHT_SURFACE = "#FFFFFF"      # White
+DARK_SURFACE = "#1E293B"       # Dark gray
+
+# ===========================================
+# API CONFIGURATION (Update in: lib/utils/constants.dart)
+# ===========================================
+
+# Default Server URL for testing
+DEFAULT_SERVER_URL = "http://192.168.1.100:5000"
+
+# API Endpoints
+HEALTH_ENDPOINT = "/health"
+FOLDERS_ENDPOINT = "/folders"
+FILES_ENDPOINT = "/files"
+IMAGE_ENDPOINT = "/image"
+THUMBNAIL_ENDPOINT = "/thumbnail"
+
+# ===========================================
+# UI CONFIGURATION
+# ===========================================
+
+# Grid Layout (Update in: lib/utils/constants.dart)
+GRID_CROSS_AXIS_COUNT = 2
+GRID_ASPECT_RATIO = 0.8
+
+# Padding and Spacing
+DEFAULT_PADDING = 16.0
+SMALL_PADDING = 8.0
+LARGE_PADDING = 24.0
+
+# Border Radius
+CARD_BORDER_RADIUS = 12.0
+BUTTON_BORDER_RADIUS = 8.0
+
+# ===========================================
+# NETWORK TIMEOUTS
+# ===========================================
+
+# Connection timeout in seconds
+CONNECTION_TIMEOUT = 10
+
+# Request timeout in seconds
+REQUEST_TIMEOUT = 30
+
+# ===========================================
+# HOW TO APPLY CHANGES
+# ===========================================
+
+# 1. PYTHON SERVER CHANGES:
+#    - Edit python_server/gallery_server.py
+#    - Update the corresponding variables
+
+# 2. FLUTTER APP CHANGES:
+#    - For pubspec.yaml: Update app name, description, version
+#    - For theme colors: Update lib/utils/theme_data.dart
+#    - For constants: Update lib/utils/constants.dart
+#    - For package name: Update android/app/build.gradle
+
+# 3. AFTER MAKING CHANGES:
+#    - For Python: Restart the server
+#    - For Flutter: Run 'flutter clean' then 'flutter pub get'
+
+# ===========================================
+# EXAMPLE SERVER URLS
+# ===========================================
+
+# Local testing:
+# http://localhost:5000
+
+# Network access (replace with your actual IP):
+# http://192.168.1.100:5000
+# http://192.168.0.105:5000
+# http://10.0.0.100:5000
+
+# Find your IP address:
+# Windows: Run 'ipconfig' in Command Prompt
+# Mac/Linux: Run 'ifconfig' in Terminal
