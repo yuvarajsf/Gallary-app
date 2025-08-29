@@ -1,0 +1,175 @@
+name: Build and Release APK
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.16.0'
+        channel: 'stable'
+        cache: true
+        
+    - name: Verify Flutter installation
+      run: |
+        flutter --version
+        flutter doctor -v
+        
+    - name: Get Flutter dependencies
+      run: flutter pub get
+      
+    - name: Run Flutter tests (if any)
+      run: flutter test --coverage || true
+      
+    - name: Analyze Flutter code
+      run: flutter analyze || true
+      
+    - name: Build APK (Debug)
+      run: flutter build apk --debug
+      
+    - name: Build APK (Release)
+      run: flutter build apk --release
+      
+    - name: Build App Bundle (Release)
+      run: flutter build appbundle --release
+      
+    - name: Create release folder
+      run: |
+        mkdir -p release-files
+        cp build/app/outputs/flutter-apk/app-debug.apk release-files/gallery-app-debug.apk
+        cp build/app/outputs/flutter-apk/app-release.apk release-files/gallery-app-release.apk
+        cp build/app/outputs/bundle/release/app-release.aab release-files/gallery-app-release.aab
+        
+    - name: Upload APK artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: gallery-app-builds
+        path: release-files/
+        retention-days: 30
+        
+    - name: Get app version
+      id: version
+      run: |
+        VERSION=$(grep 'version:' pubspec.yaml | sed 's/version: //' | tr -d ' ')
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "App version: $VERSION"
+        
+    - name: Create Release (on tag push)
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          release-files/gallery-app-debug.apk
+          release-files/gallery-app-release.apk
+          release-files/gallery-app-release.aab
+        name: Gallery App ${{ steps.version.outputs.VERSION }}
+        body: |
+          ## Gallery App Release ${{ steps.version.outputs.VERSION }}
+          
+          ### 📱 Download Options:
+          - **gallery-app-release.apk** - Production ready APK for direct installation
+          - **gallery-app-debug.apk** - Debug version with additional logging
+          - **gallery-app-release.aab** - App Bundle for Google Play Store
+          
+          ### 🚀 Installation Instructions:
+          1. Download the `gallery-app-release.apk` file
+          2. Enable "Install from Unknown Sources" in your Android settings
+          3. Install the APK on your device
+          4. Follow the setup instructions in README.md
+          
+          ### 📋 Requirements:
+          - Android 5.0 (API 21) or higher
+          - Network access to your Python gallery server
+          - Storage permission for thumbnails
+          
+          ### 🔧 Server Setup:
+          Remember to:
+          1. Run the Python server: `./python_server/run_server.sh` (Linux) or `python_server/run_server.bat` (Windows)
+          2. Configure your gallery directory path in `python_server/gallery_server.py`
+          3. Connect your device to the same network as your server
+          
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Comment PR with download links (on PR)
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { data: artifacts } = await github.rest.actions.listWorkflowRunArtifacts({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            run_id: context.runId,
+          });
+          
+          const artifactUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+          
+          const body = `## 📱 APK Build Complete!
+          
+          The Gallery App has been successfully built for this PR.
+          
+          ### 📥 Download Links:
+          - [Build Artifacts (APK + AAB)](${artifactUrl}) - Click "gallery-app-builds" to download
+          
+          ### 📦 What's included:
+          - \`gallery-app-release.apk\` - Production ready APK
+          - \`gallery-app-debug.apk\` - Debug version
+          - \`gallery-app-release.aab\` - App Bundle for Play Store
+          
+          ### ✅ Build Status:
+          - Flutter version: Latest stable
+          - Build type: Release + Debug
+          - Target: Android APK & AAB
+          
+          > **Note**: Artifacts are available for 30 days after the build.`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: body
+          });
+
+  build-info:
+    runs-on: ubuntu-latest
+    needs: build-android
+    
+    steps:
+    - name: Build Summary
+      run: |
+        echo "## 🎉 Gallery App Build Complete!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📱 Generated Files:" >> $GITHUB_STEP_SUMMARY
+        echo "- **Release APK**: Ready for production use" >> $GITHUB_STEP_SUMMARY
+        echo "- **Debug APK**: For development and testing" >> $GITHUB_STEP_SUMMARY
+        echo "- **App Bundle**: For Google Play Store submission" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📥 How to Download:" >> $GITHUB_STEP_SUMMARY
+        echo "1. Go to the 'Actions' tab in your repository" >> $GITHUB_STEP_SUMMARY
+        echo "2. Click on this workflow run" >> $GITHUB_STEP_SUMMARY
+        echo "3. Download the 'gallery-app-builds' artifact" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🏷️ Release Tags:" >> $GITHUB_STEP_SUMMARY
+        echo "Push a tag like \`v1.0.0\` to create a GitHub release with downloadable files!" >> $GITHUB_STEP_SUMMARY

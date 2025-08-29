@@ -1,0 +1,173 @@
+name: Create Release on Tag
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Matches v1.0.0, v2.1.3, etc.
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.16.0'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get Flutter dependencies
+      run: flutter pub get
+      
+    - name: Build Release APK
+      run: flutter build apk --release --split-per-abi
+      
+    - name: Build Release App Bundle
+      run: flutter build appbundle --release
+      
+    - name: Get version from tag
+      id: version
+      run: |
+        TAG_NAME=${GITHUB_REF#refs/tags/}
+        VERSION=${TAG_NAME#v}
+        echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "Release version: $VERSION"
+        
+    - name: Prepare release files
+      run: |
+        mkdir -p release-artifacts
+        
+        # Copy APK files with descriptive names
+        if [ -f "build/app/outputs/flutter-apk/app-arm64-v8a-release.apk" ]; then
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "release-artifacts/gallery-app-v${{ steps.version.outputs.VERSION }}-arm64.apk"
+        fi
+        
+        if [ -f "build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk" ]; then
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "release-artifacts/gallery-app-v${{ steps.version.outputs.VERSION }}-arm32.apk"
+        fi
+        
+        if [ -f "build/app/outputs/flutter-apk/app-x86_64-release.apk" ]; then
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk "release-artifacts/gallery-app-v${{ steps.version.outputs.VERSION }}-x86_64.apk"
+        fi
+        
+        # Fallback to universal APK if split APKs don't exist
+        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+          cp build/app/outputs/flutter-apk/app-release.apk "release-artifacts/gallery-app-v${{ steps.version.outputs.VERSION }}-universal.apk"
+        fi
+        
+        # Copy App Bundle
+        if [ -f "build/app/outputs/bundle/release/app-release.aab" ]; then
+          cp build/app/outputs/bundle/release/app-release.aab "release-artifacts/gallery-app-v${{ steps.version.outputs.VERSION }}.aab"
+        fi
+        
+        # List all files
+        ls -la release-artifacts/
+        
+    - name: Generate release notes
+      id: release_notes
+      run: |
+        cat > release_notes.md << 'EOF'
+        ## 🎉 Gallery App Release ${{ steps.version.outputs.VERSION }}
+        
+        ### 📱 Download Options:
+        
+        **For most users:** Download the **universal APK** or **arm64 APK** (recommended for modern Android devices)
+        
+        - **gallery-app-v${{ steps.version.outputs.VERSION }}-universal.apk** - Works on all Android devices
+        - **gallery-app-v${{ steps.version.outputs.VERSION }}-arm64.apk** - Optimized for 64-bit ARM devices (recommended)
+        - **gallery-app-v${{ steps.version.outputs.VERSION }}-arm32.apk** - For older 32-bit ARM devices
+        - **gallery-app-v${{ steps.version.outputs.VERSION }}-x86_64.apk** - For x86 devices (emulators/tablets)
+        - **gallery-app-v${{ steps.version.outputs.VERSION }}.aab** - App Bundle for Google Play Store
+        
+        ### 🚀 Installation Instructions:
+        
+        1. **Download** the appropriate APK file for your device
+        2. **Enable** "Install from Unknown Sources" in your Android settings:
+           - Go to Settings → Security → Install from Unknown Sources
+           - Or Settings → Apps → Special Access → Install Unknown Apps
+        3. **Install** the downloaded APK file
+        4. **Grant** necessary permissions when prompted
+        
+        ### 📋 System Requirements:
+        
+        - **Android Version**: 5.0 (API 21) or higher
+        - **RAM**: 2GB minimum, 4GB recommended
+        - **Storage**: 100MB for app + space for thumbnails
+        - **Network**: WiFi connection to your Python server
+        
+        ### 🔧 Server Setup Instructions:
+        
+        **Linux/Mac Users:**
+        ```bash
+        chmod +x setup.sh python_server/setup_server.sh python_server/run_server.sh
+        ./setup.sh
+        ./python_server/run_server.sh
+        ```
+        
+        **Windows Users:**
+        ```cmd
+        setup.bat
+        python_server\run_server.bat
+        ```
+        
+        ### ⚙️ Configuration:
+        
+        1. **Edit** `python_server/gallery_server.py`
+        2. **Update** `BASE_DIRECTORY` to your pictures folder:
+           - Linux: `BASE_DIRECTORY = r"/home/username/Pictures"`
+           - Windows: `BASE_DIRECTORY = r"C:\Users\Username\Pictures"`
+        3. **Ensure** your phone and computer are on the same WiFi network
+        4. **Find your computer's IP** address and use it in the app
+        
+        ### 🐛 Troubleshooting:
+        
+        - **Can't connect to server?** Check firewall settings and ensure port 5000 is open
+        - **No images showing?** Verify the BASE_DIRECTORY path is correct
+        - **App won't install?** Enable installation from unknown sources
+        - **Crashes on startup?** Check Android version compatibility
+        
+        ### 📝 What's New:
+        
+        - Check the commit history for latest changes and improvements
+        - See `CHANGELOG.md` for detailed release notes (if available)
+        
+        ---
+        
+        **Need help?** Check the README.md file or create an issue in this repository.
+        EOF
+        
+        echo "Generated release notes"
+        
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.TAG_NAME }}
+        name: Gallery App ${{ steps.version.outputs.VERSION }}
+        body_path: release_notes.md
+        files: release-artifacts/*
+        draft: false
+        prerelease: false
+        make_latest: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-files-${{ steps.version.outputs.VERSION }}
+        path: release-artifacts/
+        retention-days: 90
