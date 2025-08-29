@@ -39,7 +39,7 @@ jobs:
       run: flutter pub get
       
     - name: Analyze code for errors
-      run: flutter analyze --fatal-infos
+      run: flutter analyze --fatal-infos --fatal-warnings
       continue-on-error: false
       
     - name: Clean build cache

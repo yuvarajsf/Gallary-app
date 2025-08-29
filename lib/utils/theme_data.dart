@@ -33,7 +33,6 @@ class AppTheme {
       backgroundColor: Colors.transparent,
       foregroundColor: Color(0xFF1E293B),
       titleTextStyle: TextStyle(
-        fontFamily: 'Poppins',
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: Color(0xFF1E293B),
@@ -52,7 +51,6 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         textStyle: const TextStyle(
-          fontFamily: 'Poppins',
           fontSize: 16,
           fontWeight: FontWeight.w600,
         ),
@@ -81,7 +79,6 @@ class AppTheme {
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    fontFamily: 'Poppins',
     colorScheme: const ColorScheme.dark(
       primary: primaryColor,
       secondary: secondaryColor,
@@ -100,7 +97,6 @@ class AppTheme {
       backgroundColor: Colors.transparent,
       foregroundColor: darkOnSurface,
       titleTextStyle: TextStyle(
-        fontFamily: 'Poppins',
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: darkOnSurface,
@@ -120,7 +116,6 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         textStyle: const TextStyle(
-          fontFamily: 'Poppins',
           fontSize: 16,
           fontWeight: FontWeight.w600,
         ),

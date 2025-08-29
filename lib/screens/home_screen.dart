@@ -153,9 +153,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () async {
                         Navigator.pop(context);
                         await StorageHelper.clearAll();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Cache cleared')),
-                        );
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Cache cleared')),
+                          );
+                        }
                       },
                     ),
                   ],

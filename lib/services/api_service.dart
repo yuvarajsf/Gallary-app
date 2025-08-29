@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/gallery_item.dart';
-import '../utils/constants.dart';
 
 class ApiService {
   static String? _baseUrl;

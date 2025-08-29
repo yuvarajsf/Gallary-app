@@ -54,25 +54,27 @@ class _SplashScreenState extends State<SplashScreen>
     
     final serverUrl = await StorageHelper.getServerUrl();
     
-    if (mounted) {
-      if (serverUrl != null && serverUrl.isNotEmpty) {
-        ApiService.setBaseUrl(serverUrl);
-        final isConnected = await ApiService.testConnection();
-        
-        if (isConnected) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
-        } else {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const ServerConfigScreen()),
-          );
-        }
+    if (!mounted) return;
+    
+    if (serverUrl != null && serverUrl.isNotEmpty) {
+      ApiService.setBaseUrl(serverUrl);
+      final isConnected = await ApiService.testConnection();
+      
+      if (!mounted) return;
+      
+      if (isConnected) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
       } else {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const ServerConfigScreen()),
         );
       }
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const ServerConfigScreen()),
+      );
     }
   }
 
