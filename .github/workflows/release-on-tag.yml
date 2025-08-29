@@ -25,7 +25,7 @@ jobs:
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.16.0'
+        flutter-version: '3.19.0'
         channel: 'stable'
         cache: true
         
@@ -33,10 +33,7 @@ jobs:
       run: flutter pub get
       
     - name: Build Release APK
-      run: flutter build apk --release --split-per-abi
-      
-    - name: Build Release App Bundle
-      run: flutter build appbundle --release
+      run: flutter build apk --release
       
     - name: Get version from tag
       id: version
@@ -51,28 +48,8 @@ jobs:
       run: |
         mkdir -p release-artifacts
         
-        # Copy APK files with descriptive names
-        if [ -f "build/app/outputs/flutter-apk/app-arm64-v8a-release.apk" ]; then
-          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "release-artifacts/gallery-app-v${{ steps.version.outputs.VERSION }}-arm64.apk"
-        fi
-        
-        if [ -f "build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk" ]; then
-          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "release-artifacts/gallery-app-v${{ steps.version.outputs.VERSION }}-arm32.apk"
-        fi
-        
-        if [ -f "build/app/outputs/flutter-apk/app-x86_64-release.apk" ]; then
-          cp build/app/outputs/flutter-apk/app-x86_64-release.apk "release-artifacts/gallery-app-v${{ steps.version.outputs.VERSION }}-x86_64.apk"
-        fi
-        
-        # Fallback to universal APK if split APKs don't exist
-        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
-          cp build/app/outputs/flutter-apk/app-release.apk "release-artifacts/gallery-app-v${{ steps.version.outputs.VERSION }}-universal.apk"
-        fi
-        
-        # Copy App Bundle
-        if [ -f "build/app/outputs/bundle/release/app-release.aab" ]; then
-          cp build/app/outputs/bundle/release/app-release.aab "release-artifacts/gallery-app-v${{ steps.version.outputs.VERSION }}.aab"
-        fi
+        # Copy the universal release APK
+        cp build/app/outputs/flutter-apk/app-release.apk "release-artifacts/gallery-app-v${{ steps.version.outputs.VERSION }}.apk"
         
         # List all files
         ls -la release-artifacts/
@@ -83,15 +60,9 @@ jobs:
         cat > release_notes.md << 'EOF'
         ## 🎉 Gallery App Release ${{ steps.version.outputs.VERSION }}
         
-        ### 📱 Download Options:
+        ### 📱 Download:
         
-        **For most users:** Download the **universal APK** or **arm64 APK** (recommended for modern Android devices)
-        
-        - **gallery-app-v${{ steps.version.outputs.VERSION }}-universal.apk** - Works on all Android devices
-        - **gallery-app-v${{ steps.version.outputs.VERSION }}-arm64.apk** - Optimized for 64-bit ARM devices (recommended)
-        - **gallery-app-v${{ steps.version.outputs.VERSION }}-arm32.apk** - For older 32-bit ARM devices
-        - **gallery-app-v${{ steps.version.outputs.VERSION }}-x86_64.apk** - For x86 devices (emulators/tablets)
-        - **gallery-app-v${{ steps.version.outputs.VERSION }}.aab** - App Bundle for Google Play Store
+        - **gallery-app-v${{ steps.version.outputs.VERSION }}.apk** - Production ready APK for all Android devices
         
         ### 🚀 Installation Instructions:
         
