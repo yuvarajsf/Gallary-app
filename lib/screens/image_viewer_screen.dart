@@ -5,6 +5,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/gallery_item.dart';
 import '../services/api_service.dart';
+import '../services/download_service.dart';
 
 class ImageViewerScreen extends StatefulWidget {
   final List<GalleryItem> images;
@@ -53,6 +54,189 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     setState(() {
       _currentIndex = index;
     });
+  }
+
+  Future<void> _downloadImage() async {
+    try {
+      final currentImage = widget.images[_currentIndex];
+      
+      // Check if file already exists
+      final fileExists = await DownloadService.fileExistsInDownloads(currentImage.name);
+      
+      // Show download confirmation
+      final shouldDownload = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Download Image'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Download "${currentImage.name}" to Downloads folder?'),
+              if (fileExists) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.warning, color: Colors.orange, size: 16),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'File already exists. It will be overwritten.',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Download'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldDownload == true) {
+        if (!mounted) return;
+        
+        // Show progress dialog
+        double downloadProgress = 0.0;
+        bool isDownloading = true;
+        
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => StatefulBuilder(
+            builder: (context, setState) => AlertDialog(
+              title: const Text('Downloading'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Downloading "${currentImage.name}"...'),
+                  const SizedBox(height: 16),
+                  LinearProgressIndicator(
+                    value: downloadProgress,
+                    backgroundColor: Colors.grey[300],
+                  ),
+                  const SizedBox(height: 8),
+                  Text('${(downloadProgress * 100).toInt()}%'),
+                ],
+              ),
+              actions: [
+                if (!isDownloading)
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
+                  ),
+              ],
+            ),
+          ),
+        );
+
+        try {
+          final downloadUrl = ApiService.getDownloadUrl(currentImage.path);
+          
+          final filePath = await DownloadService.downloadFile(
+            url: downloadUrl,
+            fileName: currentImage.name,
+            onProgress: (progress) {
+              if (mounted) {
+                // Update progress in the dialog
+                downloadProgress = progress;
+                if (Navigator.canPop(context)) {
+                  // Rebuild the dialog to show updated progress
+                  Navigator.pop(context);
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Downloading'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Downloading "${currentImage.name}"...'),
+                          const SizedBox(height: 16),
+                          LinearProgressIndicator(
+                            value: progress,
+                            backgroundColor: Colors.grey[300],
+                          ),
+                          const SizedBox(height: 8),
+                          Text('${(progress * 100).toInt()}%'),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+              }
+            },
+          );
+
+          isDownloading = false;
+          
+          if (mounted && Navigator.canPop(context)) {
+            Navigator.pop(context); // Close progress dialog
+            
+            final downloadPath = await DownloadService.getDownloadPath();
+            
+            // Show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('✓ Downloaded "${currentImage.name}"'),
+                    Text('Saved to: $downloadPath', style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 4),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        } catch (e) {
+          isDownloading = false;
+          
+          if (mounted && Navigator.canPop(context)) {
+            Navigator.pop(context); // Close progress dialog
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Download failed: ${e.toString()}'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 4),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Download error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   void _showImageInfo() {
@@ -244,8 +428,43 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
             child: GestureDetector(
               onTap: _toggleVisibility,
               behavior: HitTestBehavior.translucent,
+              ),
             ),
-          ),
+
+          // Download button (bottom right corner)
+          if (_isVisible)
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(28),
+                    onTap: _downloadImage,
+                    child: const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Icon(
+                        Icons.download,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
 
           // Bottom navigation indicators
           if (_isVisible && widget.images.length > 1)

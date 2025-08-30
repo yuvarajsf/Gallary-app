@@ -102,4 +102,26 @@ class ApiService {
     if (_baseUrl == null) return '';
     return '$_baseUrl/thumbnail?path=${Uri.encodeComponent(imagePath)}';
   }
+
+  static String getDownloadUrl(String filePath) {
+    if (_baseUrl == null) return '';
+    return '$_baseUrl/download?path=${Uri.encodeComponent(filePath)}';
+  }
+
+  static Future<http.Response> downloadFile(String filePath) async {
+    if (_baseUrl == null) throw Exception('Base URL not set');
+    
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/download').replace(
+          queryParameters: {'path': filePath}
+        ),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(const Duration(seconds: 60));
+
+      return response;
+    } catch (e) {
+      throw Exception('Download error: $e');
+    }
+  }
 }

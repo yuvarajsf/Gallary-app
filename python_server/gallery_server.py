@@ -17,7 +17,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration - CHANGE THESE PATHS TO YOUR ACTUAL PATHS
-BASE_DIRECTORY = r"C:\Users\YourName\Pictures"  # Change this to your gallery directory
+BASE_DIRECTORY = r"C:\Users\YuvarajAnbazhagan\Pictures\Screenshots"  # Change this to your gallery directory
 THUMBNAIL_SIZE = (300, 300)
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.mp4', '.avi', '.mov', '.mkv'}
 
@@ -220,6 +220,32 @@ def serve_thumbnail():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/download', methods=['GET'])
+def download_file():
+    """Serve file for download."""
+    try:
+        path = request.args.get('path', '')
+        if not path:
+            return jsonify({"error": "Path parameter is required"}), 400
+        
+        full_path = Path(BASE_DIRECTORY) / path
+        
+        if not full_path.exists() or not full_path.is_file():
+            return jsonify({"error": "File not found"}), 404
+        
+        # Check if it's an allowed file
+        if not is_allowed_file(full_path.name):
+            return jsonify({"error": "File type not allowed"}), 400
+        
+        return send_file(
+            str(full_path),
+            as_attachment=True,
+            download_name=full_path.name
+        )
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/', methods=['GET'])
 def index():
     """Root endpoint with server information."""
@@ -232,19 +258,12 @@ def index():
             "/folders": "Get folders and files (optional ?path= parameter)",
             "/files": "Get files in folder (?path= parameter required)",
             "/image": "Serve full image (?path= parameter required)",
-            "/thumbnail": "Serve thumbnail (?path= parameter required)"
+            "/thumbnail": "Serve thumbnail (?path= parameter required)",
+            "/download": "Download file (?path= parameter required)"
         }
     })
 
-if __name__ == '__main__':
-    print(f"🖼️  Gallery Server Starting...")
-    print(f"📁 Base Directory: {BASE_DIRECTORY}")
-    print(f"🌐 Server will be available at: http://localhost:5000")
-    print(f"📱 For mobile access, use your computer's IP address instead of localhost")
-    print(f"   Example: http://192.168.1.100:5000")
-    print(f"\n⚠️  Make sure to change BASE_DIRECTORY in this file to your actual gallery path!")
-    print(f"🔧 Current BASE_DIRECTORY: {BASE_DIRECTORY}")
-    
+if __name__ == '__main__':    
     # Check if base directory exists
     if not Path(BASE_DIRECTORY).exists():
         print(f"\n❌ ERROR: Base directory does not exist: {BASE_DIRECTORY}")
@@ -252,4 +271,4 @@ if __name__ == '__main__':
     else:
         print(f"✅ Base directory exists and is ready to serve files.")
     
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)
