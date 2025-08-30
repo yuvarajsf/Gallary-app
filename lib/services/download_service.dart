@@ -47,7 +47,7 @@ class DownloadService {
       if (Platform.isAndroid) {
         final deviceInfo = DeviceInfoPlugin();
         final androidInfo = await deviceInfo.androidInfo;
-        return androidInfo.version.sdkInt;
+        return androidInfo.version.sdkInt ?? 30;
       }
       return 33; // Default to latest for non-Android platforms
     } catch (e) {
