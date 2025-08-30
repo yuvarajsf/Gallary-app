@@ -64,9 +64,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       final fileExists = await DownloadService.fileExistsInDownloads(currentImage.name);
       
       // Show download confirmation
-      final shouldDownload = await showDialog<bool>(
+        final shouldDownload = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (dialogContext) => AlertDialog(
           title: const Text('Download Image'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -99,11 +99,11 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
+              onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Download'),
             ),
           ],
@@ -120,8 +120,8 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (context) => StatefulBuilder(
-            builder: (context, setState) => AlertDialog(
+          builder: (dialogContext) => StatefulBuilder(
+            builder: (dialogContext, setState) => AlertDialog(
               title: const Text('Downloading'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -139,7 +139,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
               actions: [
                 if (!isDownloading)
                   TextButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => Navigator.pop(dialogContext),
                     child: const Text('Close'),
                   ),
               ],
@@ -150,7 +150,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
         try {
           final downloadUrl = ApiService.getDownloadUrl(currentImage.path);
           
-          final filePath = await DownloadService.downloadFile(
+          await DownloadService.downloadFile(
             url: downloadUrl,
             fileName: currentImage.name,
             onProgress: (progress) {
@@ -163,7 +163,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                   showDialog(
                     context: context,
                     barrierDismissible: false,
-                    builder: (context) => AlertDialog(
+                    builder: (progressContext) => AlertDialog(
                       title: const Text('Downloading'),
                       content: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -193,21 +193,23 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
             final downloadPath = await DownloadService.getDownloadPath();
             
             // Show success message
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('✓ Downloaded "${currentImage.name}"'),
-                    Text('Saved to: $downloadPath', style: const TextStyle(fontSize: 12)),
-                  ],
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('✓ Downloaded "${currentImage.name}"'),
+                      Text('Saved to: $downloadPath', style: const TextStyle(fontSize: 12)),
+                    ],
+                  ),
+                  backgroundColor: Colors.green,
+                  duration: const Duration(seconds: 4),
+                  behavior: SnackBarBehavior.floating,
                 ),
-                backgroundColor: Colors.green,
-                duration: const Duration(seconds: 4),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+              );
+            }
           }
         } catch (e) {
           isDownloading = false;

@@ -47,7 +47,7 @@ class DownloadService {
       if (Platform.isAndroid) {
         final deviceInfo = DeviceInfoPlugin();
         final androidInfo = await deviceInfo.androidInfo;
-        return androidInfo.version.sdkInt ?? 30;
+        return androidInfo.version.sdkInt;
       }
       return 33; // Default to latest for non-Android platforms
     } catch (e) {
@@ -70,7 +70,7 @@ class DownloadService {
       }
 
       // Get Downloads directory
-      Directory? downloadsDir;
+      Directory downloadsDir;
       
       if (Platform.isAndroid) {
         // Try to get the Downloads directory
@@ -79,25 +79,18 @@ class DownloadService {
           if (!await downloadsDir.exists()) {
             // Fallback to external storage directory
             final externalDir = await getExternalStorageDirectory();
-            if (externalDir != null) {
-              downloadsDir = Directory('${externalDir.path}/Download');
-              if (!await downloadsDir.exists()) {
-                await downloadsDir.create(recursive: true);
-              }
+            downloadsDir = Directory('${externalDir!.path}/Download');
+            if (!await downloadsDir.exists()) {
+              await downloadsDir.create(recursive: true);
             }
           }
         } catch (e) {
           // Final fallback to app's external files directory
-          final externalDir = await getExternalStorageDirectory();
-          downloadsDir = externalDir;
+          downloadsDir = await getExternalStorageDirectory()!;
         }
       } else {
         // iOS - use Documents directory
         downloadsDir = await getApplicationDocumentsDirectory();
-      }
-
-      if (downloadsDir == null) {
-        throw Exception('Could not access Downloads directory');
       }
 
       final filePath = '${downloadsDir.path}/$fileName';
@@ -127,21 +120,17 @@ class DownloadService {
   /// Check if file already exists in downloads
   static Future<bool> fileExistsInDownloads(String fileName) async {
     try {
-      Directory? downloadsDir;
+      Directory downloadsDir;
       
       if (Platform.isAndroid) {
         downloadsDir = Directory('/storage/emulated/0/Download');
         if (!await downloadsDir.exists()) {
           final externalDir = await getExternalStorageDirectory();
-          if (externalDir != null) {
-            downloadsDir = Directory('${externalDir.path}/Download');
-          }
+          downloadsDir = Directory('${externalDir!.path}/Download');
         }
       } else {
         downloadsDir = await getApplicationDocumentsDirectory();
       }
-
-      if (downloadsDir == null) return false;
 
       final file = File('${downloadsDir.path}/$fileName');
       return await file.exists();
@@ -158,9 +147,7 @@ class DownloadService {
         return 'Downloads folder';
       } else {
         final externalDir = await getExternalStorageDirectory();
-        if (externalDir != null) {
-          return '${externalDir.path}/Download';
-        }
+        return '${externalDir!.path}/Download';
       }
     } else {
       final dir = await getApplicationDocumentsDirectory();
