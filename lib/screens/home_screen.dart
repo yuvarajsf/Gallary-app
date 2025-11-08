@@ -8,6 +8,7 @@ import 'server_config_screen.dart';
 import 'folder_screen.dart';
 import 'image_viewer_screen.dart';
 import 'theme_settings_screen.dart';
+import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -145,6 +146,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => const ThemeSettingsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(),
+                    ListTile(
+                      leading: const Icon(Icons.notifications_active_rounded),
+                      title: const Text('Notifications'),
+                      subtitle: const Text('View captured notifications'),
+                      trailing: const Icon(Icons.arrow_forward_ios_rounded),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const NotificationsScreen(),
                           ),
                         );
                       },
