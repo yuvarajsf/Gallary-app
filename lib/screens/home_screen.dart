@@ -8,7 +8,6 @@ import 'server_config_screen.dart';
 import 'folder_screen.dart';
 import 'image_viewer_screen.dart';
 import 'theme_settings_screen.dart';
-import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
