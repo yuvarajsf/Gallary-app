@@ -151,21 +151,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const Divider(),
                     ListTile(
-                      leading: const Icon(Icons.notifications_active_rounded),
-                      title: const Text('Notifications'),
-                      subtitle: const Text('View captured notifications'),
-                      trailing: const Icon(Icons.arrow_forward_ios_rounded),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const NotificationsScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    const Divider(),
-                    ListTile(
                       leading: const Icon(Icons.refresh_rounded),
                       title: const Text('Refresh'),
                       subtitle: const Text('Reload gallery data'),
