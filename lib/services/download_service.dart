@@ -86,7 +86,13 @@ class DownloadService {
           }
         } catch (e) {
           // Final fallback to app's external files directory
-          downloadsDir = await getExternalStorageDirectory()!;
+          final extDir = await getExternalStorageDirectory();
+          if (extDir == null) {
+            // Fallback to application documents directory if external is unavailable
+            downloadsDir = await getApplicationDocumentsDirectory();
+          } else {
+            downloadsDir = extDir;
+          }
         }
       } else {
         // iOS - use Documents directory
@@ -126,7 +132,11 @@ class DownloadService {
         downloadsDir = Directory('/storage/emulated/0/Download');
         if (!await downloadsDir.exists()) {
           final externalDir = await getExternalStorageDirectory();
-          downloadsDir = Directory('${externalDir!.path}/Download');
+          if (externalDir != null) {
+            downloadsDir = Directory('${externalDir.path}/Download');
+          } else {
+            downloadsDir = await getApplicationDocumentsDirectory();
+          }
         }
       } else {
         downloadsDir = await getApplicationDocumentsDirectory();
@@ -147,12 +157,15 @@ class DownloadService {
         return 'Downloads folder';
       } else {
         final externalDir = await getExternalStorageDirectory();
-        return '${externalDir!.path}/Download';
+        if (externalDir != null) {
+          return '${externalDir.path}/Download';
+        }
+        final dir = await getApplicationDocumentsDirectory();
+        return dir.path;
       }
     } else {
       final dir = await getApplicationDocumentsDirectory();
       return dir.path;
     }
-    return 'Downloads folder';
   }
 }

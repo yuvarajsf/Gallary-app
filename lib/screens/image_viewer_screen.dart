@@ -63,6 +63,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
       // Check if file already exists
       final fileExists = await DownloadService.fileExistsInDownloads(currentImage.name);
       
+      // Ensure the widget is still in the tree before using context
+      if (!mounted) return;
+      
       // Show download confirmation
         final shouldDownload = await showDialog<bool>(
         context: context,
