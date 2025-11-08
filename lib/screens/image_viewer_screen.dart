@@ -158,11 +158,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
             fileName: currentImage.name,
             onProgress: (progress) {
               if (mounted) {
-                // Update progress in the dialog
                 downloadProgress = progress;
                 if (Navigator.canPop(context)) {
-                  // Rebuild the dialog to show updated progress
-                  Navigator.pop(context);
+                  Navigator.pop(context); // Close progress dialog
                   showDialog(
                     context: context,
                     barrierDismissible: false,
@@ -216,10 +214,8 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
           }
         } catch (e) {
           isDownloading = false;
-          
           if (mounted && Navigator.canPop(context)) {
             Navigator.pop(context); // Close progress dialog
-            
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Download failed: ${e.toString()}'),
