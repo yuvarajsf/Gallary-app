@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../models/gallery_item.dart';
 import '../services/api_service.dart';
 import '../widgets/gallery_item_card.dart';
