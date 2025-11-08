@@ -7,6 +7,7 @@ import '../utils/storage_helper.dart';
 import 'server_config_screen.dart';
 import 'folder_screen.dart';
 import 'image_viewer_screen.dart';
+import 'theme_settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -129,6 +130,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
                             builder: (context) => const ServerConfigScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(),
+                    ListTile(
+                      leading: const Icon(Icons.color_lens_rounded),
+                      title: const Text('Appearance'),
+                      subtitle: const Text('Customize theme colors and fonts'),
+                      trailing: const Icon(Icons.arrow_forward_ios_rounded),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const ThemeSettingsScreen(),
                           ),
                         );
                       },

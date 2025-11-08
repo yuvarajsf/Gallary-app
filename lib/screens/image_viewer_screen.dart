@@ -443,13 +443,14 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
               right: 16,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.95),
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.45),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
@@ -458,11 +459,13 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(28),
                     onTap: _downloadImage,
-                    child: const Padding(
-                      padding: EdgeInsets.all(12),
+                    splashColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.12),
+                    highlightColor: Colors.transparent,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
                       child: Icon(
                         Icons.download,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         size: 24,
                       ),
                     ),

@@ -246,14 +246,15 @@ class _FolderScreenState extends State<FolderScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            MasonryGridView.builder(
+            GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
+                childAspectRatio: 0.8,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
               ),
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
               itemCount: images.length,
               itemBuilder: (context, index) {
                 return GalleryItemCard(
